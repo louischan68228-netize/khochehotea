@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Kho - Chè Hotea</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold text-green-600 mb-6 text-center">QUẢN LÝ XUẤT NHẬP TỒN - KHÓ CHÈ HOTEA</h1>
+        
+        <!-- Form nhập liệu -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+            <input type="text" id="tenSP" placeholder="Tên sản phẩm (VD: Trà Ô Long)" class="border p-2 rounded">
+            <input type="number" id="nhap" placeholder="Số lượng Nhập" class="border p-2 rounded" value="0">
+            <input type="number" id="xuat" placeholder="Số lượng Xuất" class="border p-2 rounded" value="0">
+            <button onclick="themSanPham()" class="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600">
+                Thêm / Cập nhật
+            </button>
+        </div>
+
+        <!-- Bảng thống kê -->
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-green-100 text-green-800">
+                    <th class="p-3 border">Tên Sản Phẩm</th>
+                    <th class="p-3 border">Số Lượng Nhập</th>
+                    <th class="p-3 border">Số Lượng Xuất</th>
+                    <th class="p-3 border">TỒN KHO</th>
+                    <th class="p-3 border text-center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="bangDuLieu">
+                <!-- Dữ liệu sẽ hiển thị ở đây -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let danhSachSanPham = JSON.parse(localStorage.getItem('khoHotea')) || [];
+
+        function hienThiDuLieu() {
+            const tbody = document.getElementById('bangDuLieu');
+            tbody.innerHTML = '';
+            danhSachSanPham.forEach((sp, index) => {
+                const tonKho = sp.nhap - sp.xuat;
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 border">${sp.ten}</td>
+                        <td class="p-3 border">${sp.nhap}</td>
+                        <td class="p-3 border">${sp.xuat}</td>
+                        <td class="p-3 border font-bold ${tonKho < 0 ? 'text-red-500' : 'text-green-600'}">${tonKho}</td>
+                        <td class="p-3 border text-center">
+                            <button onclick="xoaSanPham(${index})" class="text-red-500 hover:underline">Xóa</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function themSanPham() {
+            const ten = document.getElementById('tenSP').value;
+            const nhap = parseInt(document.getElementById('nhap').value) || 0;
+            const xuat = parseInt(document.getElementById('xuat').value) || 0;
+
+            if (!ten) return alert("Vui lòng nhập tên sản phẩm!");
+
+            // Kiểm tra xem sản phẩm đã có chưa để cộng dồn
+            const spCu = danhSachSanPham.find(sp => sp.ten === ten);
+            if (spCu) {
+                spCu.nhap += nhap;
+                spCu.xuat += xuat;
+            } else {
+                danhSachSanPham.push({ ten, nhap, xuat });
+            }
+
+            localStorage.setItem('khoHotea', JSON.stringify(danhSachSanPham));
+            hienThiDuLieu();
+            
+            // Xóa form sau khi nhập
+            document.getElementById('tenSP').value = '';
+            document.getElementById('nhap').value = '0';
+            document.getElementById('xuat').value = '0';
+        }
+
+        function xoaSanPham(index) {
+            danhSachSanPham.splice(index, 1);
+            localStorage.setItem('khoHotea', JSON.stringify(danhSachSanPham));
+            hienThiDuLieu();
+        }
+
+        // Khởi chạy khi mở trang
+        hienThiDuLieu();
+    </script>
+</body>
+</html>
